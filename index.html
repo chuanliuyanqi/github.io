@@ -17,16 +17,27 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
         }
         canvas {
             display: block;
         }
         .title {
             position: absolute;
-            top: 20px;
+            top: 30px;
             color: white;
-            font-size: 24px;
+            font-size: 28px;
+            text-align: center;
+            width: 100%;
+            z-index: 10;
+            text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            position: absolute;
+            bottom: 30px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
             text-align: center;
             width: 100%;
             z-index: 10;
@@ -34,7 +45,8 @@
     </style>
 </head>
 <body>
-    <div class="title"></div>
+    <div class="title">50种语言表达"我爱你"</div>
+    <div class="subtitle">文字沿爱心轨道匀速运动</div>
     <canvas id="heartCanvas"></canvas>
 
     <script>
@@ -113,14 +125,30 @@
             return 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
         }
         
+        // 计算爱心轨迹上的点
+        function getHeartPoint(t, scale) {
+            return {
+                x: canvas.width / 2 + heartX(t) * scale,
+                y: canvas.height / 2 - heartY(t) * scale
+            };
+        }
+        
+        // 计算爱心轨迹的切线角度（用于确定文字方向）
+        function getHeartTangent(t) {
+            const delta = 0.01;
+            const p1 = getHeartPoint(t, 1);
+            const p2 = getHeartPoint(t + delta, 1);
+            return Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        }
+        
         // 文字对象类
         class LoveText {
             constructor(text, index, total) {
                 this.text = text;
                 this.index = index;
                 this.total = total;
-                this.angle = (index / total) * Math.PI * 2;
-                this.speed = 0.005;
+                this.phase = (index / total) * Math.PI * 2; // 初始相位
+                this.speed = 0.002; // 所有文字速度相同
                 this.color = `hsl(${index * 7}, 100%, 70%)`;
                 this.size = 14 + Math.random() * 6;
                 this.x = 0;
@@ -129,14 +157,13 @@
             }
             
             update() {
-                this.angle += this.speed;
+                this.phase += this.speed;
                 
                 // 计算爱心轨迹上的位置
-                const t = this.angle;
                 const scale = Math.min(canvas.width, canvas.height) / 40;
-                
-                this.x = canvas.width / 2 + heartX(t) * scale;
-                this.y = canvas.height / 2 - heartY(t) * scale;
+                const point = getHeartPoint(this.phase, scale);
+                this.x = point.x;
+                this.y = point.y;
                 
                 // 计算缩放效果，使文字在靠近观察者时变大
                 const distanceFromCenter = Math.sqrt(
@@ -152,9 +179,11 @@
                 ctx.translate(this.x, this.y);
                 ctx.scale(this.scale, this.scale);
                 ctx.fillStyle = this.color;
-                ctx.font = `${this.size}px Arial`;
+                ctx.font = `bold ${this.size}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10;
                 ctx.fillText(this.text, 0, 0);
                 ctx.restore();
             }
@@ -165,11 +194,50 @@
             new LoveText(phrase, index, lovePhrases.length)
         );
         
+        // 绘制爱心轨道
+        function drawHeartTrack() {
+            ctx.beginPath();
+            const scale = Math.min(canvas.width, canvas.height) / 40;
+            
+            for (let t = 0; t <= Math.PI * 2; t += 0.01) {
+                const point = getHeartPoint(t, scale);
+                if (t === 0) {
+                    ctx.moveTo(point.x, point.y);
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            }
+            
+            ctx.closePath();
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        
+        // 绘制背景星星
+        function drawStars() {
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 1.5;
+                const opacity = Math.random() * 0.7 + 0.3;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.fill();
+            }
+        }
+        
         // 动画循环
         function animate() {
             // 清除画布
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景元素
+            drawStars();
+            drawHeartTrack();
             
             // 更新并绘制所有文字
             texts.forEach(text => {
