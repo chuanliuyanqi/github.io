@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-    <div class="title">50种语言表达"我爱你"</div>
+    <div class="title"></div>
     <canvas id="heartCanvas"></canvas>
 
     <script>
@@ -120,7 +120,7 @@
                 this.index = index;
                 this.total = total;
                 this.angle = (index / total) * Math.PI * 2;
-                this.speed = 0.002;
+                this.speed = 0.005;
                 this.color = `hsl(${index * 7}, 100%, 70%)`;
                 this.size = 14 + Math.random() * 6;
                 this.x = 0;
