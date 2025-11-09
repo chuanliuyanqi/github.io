@@ -45,7 +45,7 @@
     </style>
 </head>
 <body>
-    <div class="title">50种语言表达"我爱你"</div>
+    <div class="title"></div>
     <div class="subtitle">文字沿爱心轨道匀速运动</div>
     <canvas id="heartCanvas"></canvas>
 
@@ -150,7 +150,7 @@
                 this.phase = (index / total) * Math.PI * 2; // 初始相位
                 this.speed = 0.002; // 所有文字速度相同
                 this.color = `hsl(${index * 7}, 100%, 70%)`;
-                this.size = 14 + Math.random() * 6;
+                this.size = 10 + Math.random() * 6;
                 this.x = 0;
                 this.y = 0;
                 this.scale = 1;
